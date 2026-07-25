@@ -5,3 +5,4 @@
 !*.example.tfvars
 .env
 *.log
+PROGRESS.md
