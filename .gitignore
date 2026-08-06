@@ -6,3 +6,6 @@
 .env
 *.log
 PROGRESS.md
+# Terraform plan files (may contain secrets/sensitive values)
+tfplan
+*.tfplan
