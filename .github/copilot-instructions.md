@@ -57,3 +57,20 @@ This repository is a **personal learning / interview-prep** project running on a
   time** and wait for confirmation before moving on.
 - Always show the exact command(s) to paste, then ask for `done` or error output.
 - Prefer PowerShell examples (Windows host).
+
+## Teardown discipline (MUST follow)
+
+11. **Non-free resources are torn down at the end of the same working session.**
+    Azure bills per resource-hour, not per operation — `create`/`delete` are free but every hour the resource exists costs money.
+12. **Same-day teardown default:**
+    ```powershell
+    az group delete --name rg-cpgitops-<env>-<region> --yes --no-wait
+    ```
+    (State SA in `rg-cpgitops-tfstate` stays intact.)
+13. **Safe to leave running** (free / effectively free at learning volume):
+    Resource Group, VNet/Subnet/NSG/UDR, Log Analytics workspace with `daily_quota_gb` set,
+    Storage Account (LRS, empty), Key Vault (standard), App Service F1.
+14. **Cost-per-hour traps — always destroy same day, ideally same hour:**
+    NAT Gateway, VPN Gateway, App Gateway v2, Bastion, Azure Firewall, Private Endpoints,
+    Public IPs, App Service B1+, Load Balancer Standard.
+15. **Set a Cost Management budget alert** on the subscription (~$5/month, alerts at 50/80/100%) — it's free.
