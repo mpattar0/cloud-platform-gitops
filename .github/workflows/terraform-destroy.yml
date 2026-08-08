@@ -13,9 +13,11 @@ on:
                 description: 'Type "destroy" to confirm'
                 required: true
                 type: string
-    schedule:
-        # 11:00 PM IST every day (17:30 UTC). Safety net if manual destroy was skipped.
-        - cron: "30 17 * * *"
+    # schedule:
+    #     # DISABLED: keep dev alive for interview-signal / drift + import demos.
+    #     # Re-enable when adding per-hour resources (App Gateway, NAT GW, App Service B1+).
+    #     # 11:00 PM IST every day (17:30 UTC).
+    #     - cron: "30 17 * * *"
 permissions:
     id-token: write
     contents: read
