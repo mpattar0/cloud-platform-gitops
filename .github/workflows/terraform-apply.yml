@@ -73,7 +73,7 @@ jobs:
                   terraform plan \
                     -input=false \
                     -no-color \
-                    -var "environment=${{ matrix.environment }}" \
+                    -var-file="../environments/team-beta/${{ matrix.environment }}.tfvars" \
                     -out=tfplan
 
             - name: Terraform apply

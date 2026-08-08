@@ -1,105 +1,105 @@
 name: terraform-plan
 
 on:
-    pull_request:
-        branches: [main]
-        paths:
-            - "terraform/**"
-            - ".github/workflows/terraform-plan.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "terraform/**"
+      - ".github/workflows/terraform-plan.yml"
 
 # Least-privilege permissions.
 # id-token:write     -> required for OIDC login to Azure
 # contents:read      -> read the repo
 # pull-requests:write -> post the plan as a PR comment
 permissions:
-    id-token: write
-    contents: read
-    pull-requests: write
+  id-token: write
+  contents: read
+  pull-requests: write
 
 # Cancel superseded runs when new commits are pushed to the same PR.
 concurrency:
-    group: tf-plan-${{ github.ref }}
-    cancel-in-progress: true
+  group: tf-plan-${{ github.ref }}
+  cancel-in-progress: true
 
 env:
-    TF_VERSION: "1.15.8"
-    TF_IN_AUTOMATION: "true"
-    TF_INPUT: "false"
-    # Tell the azurerm provider how to authenticate (mirrors providers.tf).
-    ARM_USE_OIDC: "true"
-    ARM_USE_AZUREAD: "true"
-    ARM_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
-    ARM_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
-    ARM_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+  TF_VERSION: "1.15.8"
+  TF_IN_AUTOMATION: "true"
+  TF_INPUT: "false"
+  # Tell the azurerm provider how to authenticate (mirrors providers.tf).
+  ARM_USE_OIDC: "true"
+  ARM_USE_AZUREAD: "true"
+  ARM_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
+  ARM_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+  ARM_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
 
 jobs:
-    plan:
-        name: plan (${{ matrix.environment }})
-        runs-on: ubuntu-latest
-        strategy:
-            fail-fast: false
-            matrix:
-                environment: [dev] # add prod later once dev pipeline is proven
-        defaults:
-            run:
-                working-directory: terraform
-        steps:
-            - name: Checkout
-              uses: actions/checkout@v4
+  plan:
+    name: plan (${{ matrix.environment }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        environment: [dev] # add prod later once dev pipeline is proven
+    defaults:
+      run:
+        working-directory: terraform
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-            - name: Azure login (OIDC)
-              uses: azure/login@v2
-              with:
-                  client-id: ${{ vars.AZURE_CLIENT_ID }}
-                  tenant-id: ${{ vars.AZURE_TENANT_ID }}
-                  subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      - name: Azure login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
 
-            - name: Setup Terraform
-              uses: hashicorp/setup-terraform@v3
-              with:
-                  terraform_version: ${{ env.TF_VERSION }}
-                  terraform_wrapper: false
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+          terraform_wrapper: false
 
-            - name: Terraform fmt (check)
-              run: terraform fmt -check -recursive
+      - name: Terraform fmt (check)
+        run: terraform fmt -check -recursive
 
-            - name: Terraform init
-              run: terraform init -input=false
+      - name: Terraform init
+        run: terraform init -input=false
 
-            - name: Terraform validate
-              run: terraform validate -no-color
+      - name: Terraform validate
+        run: terraform validate -no-color
 
-            - name: Terraform plan
-              id: plan
-              run: |
-                  set -o pipefail
-                  terraform plan \
-                    -input=false \
-                    -no-color \
-                    -var "environment=${{ matrix.environment }}" \
-                    -out=tfplan | tee plan.txt
+      - name: Terraform plan
+        id: plan
+        run: |
+          set -o pipefail
+          terraform plan \
+            -input=false \
+            -no-color \
+            -var-file="../environments/team-beta/${{ matrix.environment }}.tfvars" \
+            -out=tfplan | tee plan.txt
 
-            - name: Post plan to PR
-              uses: actions/github-script@v7
-              with:
-                  script: |
-                      const fs = require('fs');
-                      const plan = fs.readFileSync('terraform/plan.txt', 'utf8');
-                      const truncated = plan.length > 60000
-                        ? plan.slice(0, 60000) + '\n...[truncated]'
-                        : plan;
-                      const body = [
-                        `### terraform plan — \`${{ matrix.environment }}\``,
-                        '<details><summary>Show plan</summary>',
-                        '',
-                        '```hcl',
-                        truncated,
-                        '```',
-                        '</details>'
-                      ].join('\n');
-                      await github.rest.issues.createComment({
-                        issue_number: context.issue.number,
-                        owner: context.repo.owner,
-                        repo: context.repo.repo,
-                        body
-                      });
+      - name: Post plan to PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const plan = fs.readFileSync('terraform/plan.txt', 'utf8');
+            const truncated = plan.length > 60000
+              ? plan.slice(0, 60000) + '\n...[truncated]'
+              : plan;
+            const body = [
+              `### terraform plan — \`${{ matrix.environment }}\``,
+              '<details><summary>Show plan</summary>',
+              '',
+              '```hcl',
+              truncated,
+              '```',
+              '</details>'
+            ].join('\n');
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body
+            });

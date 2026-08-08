@@ -1,5 +1,5 @@
 // Module: log-analytics
-// Manages a single Azure Log Analytics workspace with cost-safe defaults.action "action
+// Manages a single Azure Log Analytics workspace with cost-safe defaults.
 
 resource "azurerm_log_analytics_workspace" "this" {
   name                = var.name
