@@ -20,7 +20,8 @@ permissions:
     contents: read
 
 concurrency:
-    group: tf-apply-${{ github.workflow }}
+    # Shared with terraform-destroy so apply and destroy serialize against each other.
+    group: tf-state-dev
     cancel-in-progress: false # never cancel an apply mid-flight
 
 env:
