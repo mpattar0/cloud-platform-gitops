@@ -3,6 +3,8 @@
 *.tfstate.*
 *.tfvars
 !*.example.tfvars
+# Env-selector tfvars (no secrets — env name, tags, cost center only)
+!environments/**/*.tfvars
 .env
 *.log
 PROGRESS.md
