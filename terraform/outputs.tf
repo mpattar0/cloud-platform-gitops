@@ -32,3 +32,18 @@ output "log_analytics_name" {
   description = "Name of the Log Analytics workspace."
   value       = module.log_analytics.name
 }
+
+output "keyvault_id" {
+  description = "Full ARM resource ID of the Key Vault. Use for RBAC scope + diagnostic settings."
+  value       = module.keyvault.id
+}
+
+output "keyvault_name" {
+  description = "Name of the Key Vault."
+  value       = module.keyvault.name
+}
+
+output "keyvault_uri" {
+  description = "DNS URI of the Key Vault (used by client applications)."
+  value       = module.keyvault.vault_uri
+}
