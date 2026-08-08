@@ -1,0 +1,94 @@
+name: terraform-destroy
+on:
+    workflow_dispatch:
+        inputs:
+            environment:
+                description: "Environment to destroy"
+                required: true
+                default: "dev"
+                type: choice
+                options:
+                    - dev
+            confirm:
+                description: 'Type "destroy" to confirm'
+                required: true
+                type: string
+    # schedule:
+    #     # DISABLED: keep dev alive for interview-signal / drift + import demos.
+    #     # Re-enable when adding per-hour resources (App Gateway, NAT GW, App Service B1+).
+    #     # 11:00 PM IST every day (17:30 UTC).
+    #     - cron: "30 17 * * *"
+permissions:
+    id-token: write
+    contents: read
+
+concurrency:
+    # Hardcoded group name shared with terraform-apply so an in-flight apply
+    # blocks destroy and vice versa. Do NOT include ${{ github.workflow }} —
+    # each workflow would get its own group and defeat the guard.
+    group: tf-state-dev
+    cancel-in-progress: false
+
+env:
+    TF_VERSION: "1.15.8"
+    TF_IN_AUTOMATION: "true"
+    TF_INPUT: "false"
+    ARM_USE_OIDC: "true"
+    ARM_USE_AZUREAD: "true"
+    ARM_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
+    ARM_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+    ARM_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+jobs:
+    guard:
+        # Rejects manual runs where the confirm input isn't the word "destroy".
+        # Scheduled runs skip this job entirely (event_name == 'schedule').
+        if: github.event_name == 'workflow_dispatch'
+        runs-on: ubuntu-latest
+        steps:
+            - name: Validate confirmation
+              run: |
+                  if [ "${{ github.event.inputs.confirm }}" != "destroy" ]; then
+                    echo "::error::You must type 'destroy' to confirm. Got: '${{ github.event.inputs.confirm }}'"
+                    exit 1
+                  fi
+    destroy:
+        needs: [guard]
+        # always() lets scheduled runs (where guard was skipped) still execute.
+        # For manual runs, guard must have succeeded.
+        if: |
+            always() &&
+            (needs.guard.result == 'success' || needs.guard.result == 'skipped')
+        name: destroy (dev)
+        runs-on: ubuntu-latest
+        environment: dev
+        defaults:
+            run:
+                working-directory: terraform
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Azure login (OIDC)
+              uses: azure/login@v2
+              with:
+                  client-id: ${{ vars.AZURE_CLIENT_ID }}
+                  tenant-id: ${{ vars.AZURE_TENANT_ID }}
+                  subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+            - name: Setup Terraform
+              uses: hashicorp/setup-terraform@v3
+              with:
+                  terraform_version: ${{ env.TF_VERSION }}
+                  terraform_wrapper: false
+
+            - name: Terraform init
+              run: terraform init -input=false
+
+            - name: Terraform destroy
+              run: |
+                  terraform destroy \
+                    -input=false \
+                    -no-color \
+                    -auto-approve \
+                    -var-file="../environments/team-beta/dev.tfvars"
+    
