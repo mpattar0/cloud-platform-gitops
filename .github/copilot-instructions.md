@@ -3,6 +3,47 @@
 This repository is a **personal learning / interview-prep** project running on a
 **pay-as-you-go Azure subscription**. Cost control is a hard requirement.
 
+## Roadmap enforcement (READ FIRST EVERY TURN)
+
+This repo has **two roadmap files** — read them in this order at the start of every turn:
+
+1. **`docs/ROADMAP.md`** — long-term mastery roadmap (git-tracked, durable).
+   Defines the 3 parallel tracks: GitHub Actions (A), Terraform (B), Azure services (C).
+   Each topic marked `[ ]`, `[~]`, or `[x]`. This is the north-star curriculum.
+
+2. **`PROGRESS.md`** — day-to-day PR tracker (local, gitignored).
+   Contains the "📍 Current Phase" and next-up PR.
+
+**Before responding to any request that could produce code, files, or a plan
+of action, you MUST:**
+
+1. Read `docs/ROADMAP.md` — locate which tracks + topics the request advances.
+2. Read `PROGRESS.md` — locate the current phase and next unchecked PR.
+3. **Silently verify alignment.** If the request drifts from the current phase:
+   - Flag it in one sentence (e.g. *"That's C6 — we're on C1/C8 in Phase 2, PR #3. Jump ahead?"*)
+   - Offer: (a) proceed anyway, (b) return to current PR, (c) update roadmap.
+4. **Suggest a study focus for the session** when the user asks for one — pick
+   ONE roadmap topic that aligns with the next PR and propose a 15-30 min drill
+   before writing code.
+5. **After completing a PR (merge to `main`)**:
+   - Tick the PR checkbox in `PROGRESS.md`
+   - Update the corresponding topics in `docs/ROADMAP.md` (`[ ]` → `[~]` or `[x]`)
+   - Add one-line note under the phase if a design decision was made
+
+**Never invent progress.** Only mark items complete when the user confirms merge
+or CI apply succeeded.
+
+**Roadmap has priority over user momentum.** If the user asks for something
+off-plan, name it before doing it. It's OK to do off-plan work — but only after
+the user acknowledges the drift.
+
+## North-star goal (from ROADMAP.md)
+
+Become interview-ready as a senior Cloud / Integration / DevOps engineer on
+Azure, using Terraform + GitHub Actions. Every module: variable-driven SKU
+(dev cheap, prod code-only), 5 mandatory tags, validation, plan-on-PR /
+apply-on-merge, ADR for decisions.
+
 ## Cost rules (MUST follow)
 
 1. **Default to free or minimum-cost tiers.** Never propose Premium / Standard
