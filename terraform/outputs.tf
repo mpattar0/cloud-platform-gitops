@@ -48,11 +48,6 @@ output "keyvault_uri" {
   value       = module.keyvault.vault_uri
 }
 
-output "diag_rg_id" {
-  description = "ARM ID of the diagnostic setting for the resource group."
-  value       = module.diag_rg.id
-}
-
 output "diag_kv_id" {
   description = "ARM ID of the diagnostic setting for the Key Vault."
   value       = module.diag_kv.id
