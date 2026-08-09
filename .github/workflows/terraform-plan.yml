@@ -6,6 +6,14 @@ on:
     paths:
       - "terraform/**"
       - ".github/workflows/terraform-plan.yml"
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Environment to plan"
+        required: true
+        default: "dev"
+        type: choice
+        options: [dev]
 
 # Least-privilege permissions.
 # id-token:write     -> required for OIDC login to Azure
@@ -80,6 +88,8 @@ jobs:
             -out=tfplan | tee plan.txt
 
       - name: Post plan to PR
+        # Only runs on pull_request events; manual runs skip this because there is no PR to comment on.
+        if: github.event_name == 'pull_request'
         uses: actions/github-script@v7
         with:
           script: |
