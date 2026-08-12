@@ -17,6 +17,7 @@ locals {
     app_service      = "app-${local.name_suffix}"
     #storage account: 3-24 alphanumeric only, no dashes
     storage_account = lower(replace("st${var.prefix}${var.environment}${local.region_short}", "-", ""))
+    vnet            = "vnet-${local.name_suffix}"
   }
   # Mandatory tags
   common_tags = {
@@ -41,3 +42,5 @@ check "storage_account_name_length" {
     error_message = "Storage Account name must be 24 characters or less. Current length: ${length(local.names.storage_account)}"
   }
 }
+
+
