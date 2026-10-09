@@ -90,7 +90,7 @@ Progress bar per topic uses:
 - [x] Type constraints — `object`, `map`, `list`, `set`, `tuple`
 - [x] Validation blocks (with RE2 regex constraint)
 - [x] Module inputs/outputs (pure-function pattern)
-- [ ] Complex `for` expressions with filtering + splat
+- [~] Complex `for` expressions with filtering + splat — VNet module uses filtered maps and nested `for` expressions; splat practice remains
 - [ ] `templatefile()` for scripts / cloud-init
 - [ ] `sensitive` marking on outputs
 
@@ -150,8 +150,8 @@ Grouped by role in an enterprise system. Ordered by how often each shows up in i
 - [ ] Application Insights (workspace-based, sampling, connection strings)
 
 ### C2. Networking
-- [ ] Virtual Network + Subnet (address planning, delegation)
-- [ ] Network Security Group + rules (priority, direction, service tags)
+- [~] Virtual Network + Subnet (address planning, delegation) — deployed via CI; delegation and interview practice remain
+- [~] Network Security Group + rules (priority, direction, service tags) — optional subnet NSGs and inbound deny deployed; rule tradeoffs and service tags still need practice
 - [ ] Private DNS zones + linking
 - [ ] Service Endpoints (free VNet lockdown)
 - [ ] Private Endpoints (paid, prod pattern)
@@ -160,6 +160,12 @@ Grouped by role in an enterprise system. Ordered by how often each shows up in i
 - [ ] Front Door Standard (concept + cost profile)
 - [ ] NAT Gateway (concept — expensive)
 - [ ] VNet Peering (concept + design tradeoffs)
+
+Evidence checked 2026-09-10: roadmap PR #4 shipped as
+[GitHub PR #16](https://github.com/mpattar0/cloud-platform-gitops/pull/16),
+merged 2026-08-12, with a successful
+[CI apply (dev)](https://github.com/mpattar0/cloud-platform-gitops/actions/runs/31580515333).
+This proves implementation, not completed interview mastery or current live infrastructure.
 
 ### C3. Messaging & events (enterprise integration core)
 - [ ] Service Bus namespace (Basic/Standard/Premium tradeoffs)
@@ -242,6 +248,37 @@ Grouped by role in an enterprise system. Ordered by how often each shows up in i
 
 ---
 
+## 🎓 Cert-004 objective coverage
+
+Secondary goal: fully cover **HashiCorp Terraform Associate (004)** exam
+objectives (Terraform 1.12) as a lens over the mastery roadmap — not a
+parallel workstream. Reference:
+[associate-study-004](https://developer.hashicorp.com/terraform/tutorials/certification-004/associate-study-004).
+
+Tick to ✅ **only** when a merged PR contains runnable evidence (code, workflow,
+or runbook with output).
+
+| # | Objective | Status | Evidence / gap |
+|---|---|---|---|
+| 1 | Explain IaC concepts | ✅ | `README.md`, ADRs 0001–0003, cost-driven module design |
+| 2 | Terraform's purpose (providers, state, versioning, lock file) | ✅ | `providers.tf` pinned `required_version`/`required_providers`, remote state on Azure Storage, `.terraform.lock.hcl` committed |
+| 3 | Core Terraform workflow (`init`/`fmt`/`validate`/`plan`/`apply`/`destroy`) | ✅ | Local `fmt`/`validate`/`plan`; CI apply-on-merge + nightly destroy workflows |
+| 4 | Read + write configuration | 🟡 | Have: `for_each`, `dynamic`, validation regex, locals, outputs, type constraints; merged VNet module (GitHub PR #16) adds filtered/nested `for` expressions and custom CIDR validation on complex subnet inputs. **Gap:** `templatefile()`, `sensitive = true` outputs, `check` blocks |
+| 5 | Use + create modules | 🟡 | Have: 5 local modules with inputs/outputs, pinned `versions.tf`. **Gap:** consume a registry module, git-tag versioning (`?ref=v1.0.0`), module composition (module calling module) |
+| 6 | State management | 🟡 | Have: remote backend, blob-lease locking, `state list/show/mv/rm`. **Gap:** `terraform import`, `terraform apply -replace`, `moved` blocks, `terraform_remote_state`, backend migration, refresh-only mode |
+| 7 | Maintain infrastructure | 🟡 | Have: state CLI basics. **Gap:** hands-on `import` + `-replace` on real resources, `TF_LOG` debugging session, troubleshooting runbook (planned PR #25) |
+| 8 | HCP Terraform | ❌ (out of scope) | Deliberate: using OSS + Azure Storage backend. Document as ADR (planned) with the tradeoff rationale — the exam still tests concepts, so re-read the HCP section before sitting |
+
+**Score:** 3 ✅ / 4 🟡 / 1 ❌ (out of 8).
+
+**High-leverage gap-closer PRs** (each flips one objective to ✅):
+
+- **Objective 4** — add `sensitive = true` to KV outputs + a `check` block asserting KV RBAC mode; small commit on existing module
+- **Objective 5** — refactor one module to consume a public registry module (e.g. `Azure/naming/azurerm`) with a pinned version
+- **Objective 6 + 7** — PR #25 runbook must actually run `import`, `-replace`, and demonstrate a `moved` block on real dev resources (not just describe them)
+
+---
+
 ## 🧭 How to plan a study session
 
 At the start of every session:
@@ -296,4 +333,4 @@ Not because they're unimportant — because they're separate tracks:
 
 ---
 
-📝 This document was drafted with the help of an AI assistant (GitHub Copilot) and reviewed by the repo owner.
+📝 This document includes AI-assisted drafting and updates (GitHub Copilot). The 2026-09-10 progress reconciliation is pending repo-owner review.

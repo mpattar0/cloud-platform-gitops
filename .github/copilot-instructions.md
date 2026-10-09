@@ -44,6 +44,37 @@ Azure, using Terraform + GitHub Actions. Every module: variable-driven SKU
 (dev cheap, prod code-only), 5 mandatory tags, validation, plan-on-PR /
 apply-on-merge, ADR for decisions.
 
+## Secondary goal — Terraform Associate (004) coverage
+
+Alongside the mastery roadmap, drive the repo to fully cover all
+**HashiCorp Terraform Associate 004** exam objectives (Terraform 1.12).
+Reference: https://developer.hashicorp.com/terraform/tutorials/certification-004/associate-study-004
+
+The 8 objectives and current repo status:
+
+1. **IaC concepts** — ✅ done (ADRs, cost-driven module design)
+2. **Terraform purpose** (providers, state, versioning, lock file) — ✅ done
+3. **Core workflow** (`init`/`fmt`/`validate`/`plan`/`apply`/`destroy`) — ✅ done
+4. **Read/write configuration** (vars, outputs, functions, `dynamic`, validation, `for_each`, sensitive, custom conditions, `check`) — 🟡 partial
+5. **Use + create modules** (local + registry + git-tag versioning + composition) — 🟡 partial
+6. **State management** (backends, locking, `moved`, drift, refresh-only, `import`, `-replace`, `terraform_remote_state`, backend migration) — 🟡 partial
+7. **Maintain infra** (`state list/show`, `import`, `-replace`, `TF_LOG` debugging, troubleshooting runbook) — 🟡 partial
+8. **HCP Terraform** — ❌ deliberately out of scope (using OSS + Azure Storage backend); document the decision in an ADR rather than implement
+
+**Enforcement rule:** whenever a PR could plausibly close a cert-004 gap in
+objective 4/5/6/7, prefer the framing that closes the gap. Example: PR #25
+(runbooks) should demonstrate `terraform import`, `-replace`, and `moved`
+blocks against real resources — not just describe them.
+
+**Track cert-004 status in `docs/ROADMAP.md`** under a new "Cert-004 objective
+coverage" section (add on first update). Tick objectives to ✅ only when a
+merged PR contains runnable evidence (code, workflow, or runbook with output).
+
+**Do not chase cert-004 at the expense of the mastery roadmap** — treat it as
+a lens over existing PRs, not a parallel workstream. If a small gap-closer
+mini-PR is warranted (e.g. add `sensitive = true` + a `check` block to KV),
+propose it inline and let the user accept/defer.
+
 ## Cost rules (MUST follow)
 
 1. **Default to free or minimum-cost tiers.** Never propose Premium / Standard
